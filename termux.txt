@@ -1,0 +1,11 @@
+启用ssh服务
+sshd
+pkill sshd
+
+传递数据
+scp 本地文件路径 远程用户名@远程主机IP：远程文件路径
+scp local_file remote_username@remote_ip:remote_folder
+生成ssh公私密钥对
+ssh-keygen
+一直<enter>键
+

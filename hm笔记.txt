@@ -1,0 +1,39 @@
+完整开发流程
+开发准备
+注册开发者，官网：www.harmonyos.com
+安装开发工具，应用和设备，官网网页下面，或者选项“开发”，应用开发下载DevEco Studio
+常见设置
+file->settings，搜索栏键入，Theme主题，Font字体，LanguageDefault高亮设置，Matchcase语法提示区分大小写，on the fly自动导入包选项，keymap快捷键设置
+DevEcoStduio项目结构
+界面左边项目列表Project列表中，External Libraries为jar包，依次为HMSDK,java8的SDK和Gradle工具的jar包
+Project列表第一个文件夹为创建的项目，在其中entry为主要变动的文件夹
+entry文件夹中，libs文件夹为手动导入第三方jar包的位置，src为编写代码的地方，其中main代码文件夹，ohosTest文件夹为鸿蒙提供的测试类，test文件夹junnit测试类，
+main文件夹下java文件夹为.java文件位置，resource为资源文件夹，config.json文件为APP配置信息（“关于”应用信息）
+
+第一个入门应用 hello word
+开启模拟器DevicesManage，phone是运行在华为云上的机器
+页面包含关系
+页面Ability
+子页面AbilitySlice
+展示视图view
+一个Ability对应一个.Hap包，一个APP对应多个.Hap包；模块化APP完整功能
+配置文件config.json
+项目生产信息app，如厂商，版本等；
+运行时的信息deviceConfig，如进程名，权限等；
+代码配置module，如Ability等。
+app中bundleName包名，vendor厂商信息，version版本号code代码版本name用户版本
+deviceConfig
+module中package包名，name.Hap包名，mainAbility初始化入口页面名，deviceType允许的设备类型，distroHap包的描述信息：{随应用安装，hap包名，hap类型，等
+ability每个页面的配置
+
+启动过程
+解析config.json文件，初始化，获取入口Ability的全类名，找到Ability并运行，再运行子页面，加载xml文件。
+初始化的类MyApplication，
+入口界面MainAbility
+加载Layout_ability_main.xml
+
+总结：MyApplication.java、MainAbility.java、ability_main.xml、config.json，四个主要文件，前两个java文件对应安卓的主java文件，.xml文件对应安卓.xml布局资源，.json文件对应安卓的Androidfast.xml权限添加文件
+
+第二个入门应用 页面跳转
+ui编写，xml文件或java文件
+布局元素DirectionalLayout垂直布局

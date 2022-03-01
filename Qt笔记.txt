@@ -1,0 +1,117 @@
+Qt中常用工具
+Qt助手assistant、Qt构建器qmake、Qt设计师designer、Qt转换器uic、Qt资源编译器rcc、Qt元对象编译器moc、Qt创造器qtcreate
+（帮助手册、构建链接、界面设计、.ui文件转换为.h源码、资源编译为源代码、专门转换Qt特性的Qt编译器、集成开发环境）
+
+第一个Qt程序（命令行编程）
+1.创建工程目录（必须是新建的空白文件夹）
+mkdir Hello
+2.进入工程目录创建源代码
+vi main.cpp
+
+#include <QApplication>
+#include <QLabel>
+int main(int argc, char** argv)
+{
+	//创建Qt应用程序对象，固定式
+	QApplication app(argc, argv);
+	//创建标签控件
+	QLabel label("Hello, Qt!");
+	//绘制标签控件
+	label.show();
+//让应用程序进入事件循环，固定式
+return app.exec();
+}
+
+3.构建工程
+qmake -project ,生成工程文件（Hello.pro）
+注意：添加构建选项，QT += widgets
+4.创建Makefile
+qmake ,由工程文件自动生成Makefile文件
+5.编译链接
+make ，完成编译链接
+6.运行
+./Hello 
+效果为两个独立的窗口，分别显示标签和按钮
+
+/*
+关于常用类的头文件（一定要善用assistant帮助手册）
+<QApplication>//标准头文件
+<QLabel>//标签头文件
+<QPushButton>//按钮头文件
+<QTextCodec>//汉字编码转换头文件，qt默认UTF16
+//使用方法（将GBK转换为默认编码）
+//1.创建编码对象
+//QTextCodec* coder = QTextCodec::codecForName("gbk");
+//2.将要显示gbk编码字符串转换unicode
+//QString string = coder->toUnicode("GBK编码的中文字符串");
+*/
+
+
+
+
+父窗口
+常用父窗口类
+QWidget、QMainWindow、QDialog
+父窗口析构函数自动销毁子窗口，动态创建的new的子窗口依然适用
+常用窗口操作函数
+设置窗口位置函数
+void move(int x, int y);
+设置窗口大小
+void resize(int w, int h);
+
+
+信号和槽
+Qt特有的通信机制
+（类似控件的事件发生消息机制，windows的消息机制的变种，将消息与处理融合，将处理功能函数分离）
+用法：将槽函数和其他对象信号建立连接，当信号发出时，槽函数将被触发，进而完成功能
+槽函数与普通函数构造机制和用法区别不大，可重载，设定隐藏与公开，参数可变，可被调用等
+
+信号的定义
+使用Q_OBJECT宏标记（给moc看的）
+使用signals: 声明
+注意：信号函数只需声明，不能定义；发信号的对象必须是QObject的子类
+
+槽的定义
+使用Q_OBJECT宏标记（给moc看的）
+使用slot: 声明
+注意：槽用来接收信号的（类似信号函数调用槽函数），槽也可被普通函数调用（本质就是实现控件功能的函数）；发信号的对象必须是QObject的子类
+
+信号与槽的连接函数
+[static] QMetaObject::Connection connect(
+	const QObject *sender, 		//信号发送的对象指针
+	const char *signal, 		//要发送信号的信号函数，可使用SIGNAL(...)宏进行类型转换
+	const QObject *receiver, 	//信号接收的对象指针
+	const char *method, 		//要接收信号的槽函数，可使用SLOT(...)宏进行类型转换
+	Qt::ConnectionType type = Qt::AutoConnection);//跨线程时运行方式，默认为自动，即同线程信号和槽立即响应，跨线程时各处理各的
+
+信号和槽连接的语法要求
+信号必须的参数数量>=槽必须的参数数量，多余的将被忽略
+信号参数数量可小于槽参数数量（槽参数带缺省值）
+信号和槽参数类型要一致
+一对多、多对一、信号级联，都是可以的
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
