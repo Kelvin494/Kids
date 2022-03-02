@@ -1,0 +1,59 @@
+make
+makefile文件
+基本格式
+输出名 : 输入文件的名
+	命令行完整命令
+
+正则表示，举例：
+OBJ=main.o tool1.o
+CC=gcc
+CFLAGS+= -c -Wall -g 
+main : $(OBJ)
+	gcc $(OBJ) -o main
+main.o : main.c
+	$(CC) $^ $(CFLAGS) -o $@
+tool1.o : tool1.c
+	$(CC) $^ $(CFLAGS) -o $@
+clean :
+	$(RM) *.o main -r
+
+##通用公式##
+%.o : %.c
+	$(CC) $^ $(CFLAGS) -o $@
+
+
+cmake
+创建CMakeList.txt
+
+配置
+命令行指令：cmake -S . -B build
+三行重要语句:
+指定cmake最低版本,cmake_minimum_required(VERSION 版本号)
+指定工程名，即可执行文件名,project(工程名)
+为工程添加可执行程序，add_executable(输出名 源文件)  可用宏：${CMAKE_PROJECT_NAME} ${源文件索引名}
+
+找到三方库（可多条），find_package(库名 REQUIRED)
+建立源文件索引，file(GLOB 索引名 "源文件（可正则）")
+添加链接，target_link_libraries(输出名 PRIVATE 库名)
+添加c++17的支持，target_compile_features(${CMAKE_PROJECT_NAME} PRIVATE cxx_std_17)
+
+加入自定义命令，用以自动化
+add_custom_command(
+ TARGET ${CMAKE_PROJECT_NAME} 
+ POST_BUILD
+ COMMEND ${CMAKE_PROJECT_NAME} -E copy_directory
+	 "${PROJECT_SOURCE_DIR}/assets"
+	 "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/assets")
+add_custom_command(
+ TARGET ${CMAKE_PROJECT_NAME} 
+ POST_BUILD
+ COMMEND ${CMAKE_PROJECT_NAME} -E copy_directory
+	 "${PROJECT_SOURCE_DIR}/shader/"
+	 "$<TARGET_FILE_DIR:${CMAKE_PROJECT_NAME}>/shader")
+
+
+
+
+
+构建
+命令行指令：cmake --build build
