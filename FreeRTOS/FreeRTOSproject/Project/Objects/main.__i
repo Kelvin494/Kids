@@ -1,0 +1,6 @@
+--c99 --gnu -c --cpu Cortex-M3 --li -g -O0 --apcs=interwork --split_sections -I ..\freertos\Source\include
+-I.\RTE\_Target_1
+-ID:\workpace\keil5\keil5\Core\ARM\PACK\ARM\CMSIS\4.5.0\CMSIS\Include
+-ID:\workpace\keil5\keil5\Core\ARM\PACK\ARM\CMSIS\4.5.0\Device\ARM\ARMCM3\Include
+-D__UVISION_VERSION="525" -D_RTE_ -DARMCM3
+-o .\objects\main.o --omf_browse .\objects\main.crf --depend .\objects\main.d "..\User\main.c"

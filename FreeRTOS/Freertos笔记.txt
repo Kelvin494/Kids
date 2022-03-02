@@ -1,0 +1,92 @@
+图书：freertos内核实现与应用开发实战指南：基于stm32 by 刘火良, 杨森
+
+数据类型
+portmacro.h头文件重新定义了基础数据类型
+port表示接口
+int型没有使用
+short为16位
+long为32位
+portBASE_TYPE 定义处理器位数，基础为long
+portTICK_TYPE   用于定义系统时间基准计数器的值和阻塞时间的值	
+在FreeRTOSConfig.h的configUSE_16_BIT_TICKS定义为1时：定义为unsigned shortint16位 unsigned int32位
+在keil中char默认是无符号的
+
+变量名
+前缀
+c - char
+s - short
+l - long
+x - portBASE_TYPE
+u - unsigned
+p - 指针
+函数名
+prv - private 私有函数的前缀
+vTaskPrioritySet()函数名解释：返回void，在task.c文件中定义，的set函数；相当于面向对象编程
+
+宏
+前缀小写，表示定义的文件名
+宏名大写，宏的表示名
+port（portMAX_DELAY） 在porttable.h文件中；
+task（taskENTER_CRITICAL()） 在task.h文件中；
+pd - projdefs.h
+config - FreeRTOSConfig.h
+err - projdefs.h
+通用宏
+pdTRUE 1
+pdFALSE 0
+pdPASS 1
+pdFAIL 0
+避免用Tab键
+
+基于Cortex-M3内核的FreeRTOS软件仿真工程
+1.生成
+项目创建
+Software Packs的 ARMCM3等是 ARM Cortex-M3的通用Device
+选择环境包的
+CMSIS的CODE和Device的Startup两个文件
+生成
+startup_ARMCM3.s是汇编语言写的启动文件
+system_ARMCM3.c 是C语言写的与时钟相关的文件
+2.设置
+在目标选项（魔术棒图标）中
+Debug选项卡中选择Use Simulator，则可设置为软件仿真
+Target选项卡中将Xtal修改为与system_ARMCM3.c文件中 时钟频率宏 SYSTEM_CLOCK 相同的值
+C/C++选项卡中添加IncludePath工程的头文件路径
+
+建设完毕
+
+
+建立链表
+freertos\list.c和freertos\Source\include\list.h
+添加到工程组FreeRTOS/Source中。
+
+创建任务
+全局变量、子函数调
+用时，局部变量、中断发生时，函数返回地址放在栈中，
+栈是单片机RAM中一段连续的内存空间，栈的
+大小一般在启动文件或者链接脚本中指定，最后由C库函数__main进行
+初始化。
+在多任务系统中，每个任务都是独立的、互不干扰的，所
+以要为每个任务都分配独立的栈空间，这个栈空间通常是一个预先定
+义好的全局数组，也可以是动态分配的一段内存空间，但它们都存在
+于RAM中。
+
+任务控制块
+任务的栈指针、任务名称、任务的形参等
+
+动态创建和静态创建
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
