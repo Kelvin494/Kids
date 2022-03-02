@@ -1,0 +1,20 @@
+1.基本功能
+下载git并安装，加入环境变量；
+在github等网站，新创建repositories，记住页面中.git结尾的网址；
+新创建一个文件夹，绝对路径和文件夹名为英文；
+在此新创建的文件夹打开git bash终端；
+用git clone <https(url)>，<https(url)>为上面要记住的.git结尾的网址，会生成一个文件夹，其为本地仓库master；
+在此本地仓库文件夹打开git bash终端；
+用git add . 添加文件到工作区；
+用 git commit -m 'message'提交文件到本地仓库表内,message为本次提交的提示信息；
+第一次用git push origin master推送本地文件到github网站上；
+以后git add .  ，  git commit -m 'message'  ， git push 就能上传文件;
+第一次用git pull origin master下载代码，
+用 git status 查看文件状态；
+用git checkout <文件全名>恢复文件；
+
+使用vscode直接用其打开本地库文件夹；
+暂存更改（加号），提交（对号），推送（三点，推送）；
+
+
+2.gitee git命令学习笔记（https://oschina.gitee.io/learn-git-branching/）
