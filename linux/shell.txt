@@ -1,0 +1,74 @@
+#!/bin/bash
+@echo hi
+read name
+echo "your name: " $name
+read -p "input age and height: " age height
+echo "your age and height: $age $height"
+read -p "first num" first
+read -p "second num" second
+total=$(($first+$second))
+echo "$first+$second=$total"
+read -p "file name: " filename
+test -e $filename && echo "$filename exist" || echo "$filename no exist"
+read -p "first string" firststr
+read -p "second string" secondstr
+test $firststr == $secondstr && echo "$firststr == $secondstr" || echo "$firststr != $secondstr"
+[ "$firststr" == "$secondstr" ] && echo "$firststr == $secondstr" || echo "$firststr != $secondstr"
+
+##外部参数: &0~&n，shell本身为$0;$# 最后一个参数的标号；#@ 所有参数
+echo "shell#name" $0
+echo "total " $#
+echo "whole" $@
+##逻辑控制
+if [ "$firststr" == "$secondstr" ];then 
+	echo "$firststr == $secondstr"
+	exit 0
+elif [ "$firststr" != "$secondstr" ];then
+	echo "$firststr != $secondstr"
+	exit 0
+else
+	echo "error"
+fi
+case $1 in
+	"a")
+		echo $1
+		::
+	*)
+		echo "error"
+		::
+esac
+##函数
+function help(){
+	echo "help"
+}
+
+case $1 in
+	"-h")
+		help
+		::
+	*)
+		echo "no exist $1"
+		exit 0
+		::
+esac
+print(){
+	echo $1
+	echo $2
+}
+print a	b
+##循环
+while[]
+do
+done
+
+until[]
+do
+done
+##字典查询for
+for var in con1 con2
+do
+done
+##数值步进for
+for((0;10;1))
+do
+done

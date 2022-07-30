@@ -1,0 +1,12 @@
+::灏嗕腑闂翠欢鏀惧湪midpro閲�
+set midpro_home=".\midpro\"
+::编译
+arm-linux-gnueabihf-gcc -g -c               led_assem.s -o .\midpro\led_assem.o
+::链接
+arm-linux-gnueabihf-ld -Ttext 0x87800000    .\midpro\led_assem.o -o .\midpro\led_assem.elf
+::格式转换
+arm-linux-gnueabihf-objcopy -O binary -S -g .\midpro\led_assem.elf led_assem.bin
+::反汇编
+arm-linux-gnueabihf-objdump -D .\midpro\led_assem.elf > led_assem.dis
+::还需要给bin文件加载头部
+::然后烧录

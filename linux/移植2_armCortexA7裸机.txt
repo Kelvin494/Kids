@@ -1,0 +1,240 @@
+芯片命名
+MC   IMX6 Y   2      C    VM   08  A    B
+MC   IMX6 X   @      +    VV   $$  %    A
+用途 imx6 ULL 差异化 温度 封装 频率 保留 分类         
+汇编
+作用：编写启动文件，初始化片上外设，设置sp程序指针，等
+1.CCM_CCGRxx：为时钟使能寄存器
+设置CCGR0~CCGR7为0XFFFFFFFF ，32位全设为通用使能
+2.IOMUXxxx...：IO复用设置
+设置IOMUXC_SW_MUX_CTL_PAD_GPIO1_IO03的bit3~0为0101，则GPIO1_IO03就复用为GPIO功能
+设置IOMUXC_SW_PAD_CTL_PAD_GPIO1_IO03电气特征
+3.GPIO功能
+GDIR 和DR寄存器
+
+
+GUN汇编语言
+
+标号：指令 @注释
+
+伪指令
+定义段落
+.section .testsection @定义一个 testsetcion段
+预定义段落名
+.text 表示代码段；.data 初始化的数据段；.bss 未初始化的数据段；.rodata 只读数据段
+
+汇编程序的默认入口标号是_start
+.byte 定义单字节数据，比如.byte 0x12。
+.short 定义双字节数据，比如.short 0x1234。
+.long 定义一个 4 字节数据，比如.long 0x12345678。
+.equ 赋值语句，格式为：.equ 变量名，表达式，比如.equ num, 0x12，表示 num=0x12。
+.align 数据字节对齐，比如：.align 4 表示 4 字节对齐。
+.end 表示源文件结束。
+.global 定义一个全局符号，格式为：.global symbol，比如：.global _start。
+
+
+寄存器间传递数据指令
+MOV 通用寄存器间移动数据
+MRS 将特殊寄存器（CPSR,SPSR）的数据 ->传给-> 通用寄存器
+MSR 将通用寄存器 ->传给-> 特殊寄存器（CPSR,SPSR）的数据
+
+访问存储器指令
+ARM架构是没有直接访问存储器的结构
+必须经过通用寄存器的转发
+LDR 加载存储器数据到通用寄存器 注意：LDR 加载立即数的时候要使用“=”，而不是“#”
+STR 将通用寄存器数据写入存储器 注意：STR R1, [R0] @将R1数据写到地址为R0的存储器中
+注意：LDR 和 STR 都是按照字进行读取和写入的，也就是操作的 32 位数据，如果要按照字节、
+半字进行操作的话可以在指令“LDR”后面加上 B 或 H，比如按字节操作的指令就是 LDRB 和
+STRB，按半字操作的指令就是 LDRH 和 STRH。
+
+PUSH 压栈
+POP 出栈
+
+B 跳转到PC寄存器数据的地址(不回来)
+BL 保存当前PC寄存器数据到LR（R14）再执行B指令操作（执行完返回）
+
+位运算指令
+AND与
+ORR或
+BIC清除
+ORN或非
+EOR异或
+
+
+6ull寄存器
+CCGRx 	    时钟
+MUX_CTL_PAD io复用功能
+PAD_CTL_PAD io电气
+GPIOx_GDIR  io端口的各个io引脚的方向控制（I或O）
+GPIOx_DR    写入或读取引脚的状态（在io复用设为GPIO方式）
+GPIOx_PSR   只读引脚状态
+
+
+编译程序
+::将中间件放在midpro里
+set midpro_home=".\midpro\"
+::编译
+arm-linux-gnueabihf-gcc -g -c               led_assem.s -o .\midpro\led_assem.o
+::链接
+arm-linux-gnueabihf-ld -Ttext 0x87800000    .\midpro\led_assem.o -o .\midpro\led_assem.elf
+::格式转换  
+arm-linux-gnueabihf-objcopy -O binary -S -g .\midpro\led_assem.elf led_assem.bin
+::反汇编
+arm-linux-gnueabihf-objdump -D .\midpro\led_assem.elf > led_assem.dis
+
+
+烧录
+6ull 没有内部rom，但支持的启动方式有sd，emmc，nand，norflash，spiflash
+bin文件还需添加一个头部才能烧录
+镜像格式：https://blog.csdn.net/vesamount/article/details/104128693
+
+image vector table 映像向量表
+IVT的功能就是个索引
+一共有8项，每项32-bit，所以IVT大小为32字节0x40
+数据结构为：header、entry、reserved1、dcd、boot、self、csf、reserved2
+
+1.header为IVT的头部信息，
+从低位到高位依次为 包括1字节的Tag、2字节Length、1字节的Version
+Tag，固定为0xD1
+Length，IVT大小，大端模式存放（就当前而言，Length=0x0020，即32）
+Version，0x40或者0x41
+
+2.entry为代码和数据区的起始地址（简单说就是镜像文件.imx中代码和数据的在sd卡的起始地址）
+
+reserved1保留4Byte
+
+3.device configuration data 芯片配置信息
+dcd为DCD设备配置数据区的起始地址
+DCD区的数据结构：
+header
+[CMD]
+[CMD]
+...
+CMD的数据结构：（ CMD 就是要初始化的寄存器地址和相应的寄存器值）
+header
+Adddress
+Value
+Adddress
+Value
+...
+
+4.bootdata 启动数据
+为Boot DATA区的起始地址
+Boot DATA区数据结构（每项4Byte）
+start：image文件的在sd卡中的绝对地址
+length：镜像文件大小镜像大小不能超过2MByte
+plugin：插件地址
+
+5.self为本身的起始地址，就是IVT区的起始地址
+
+csf加密相关的boot
+
+reserved2保留
+
+6.user program
+bin文件
+（在手册的表8.5当以emmc启动时，相对于image文件绝对地址）ivt表的起始地址0x400（1kByte）字节处，初始化区域大小为4k，即ivt可有3k大小，
+所以bin文件地址为0xc00
+
+	小总结：IVT + BOOTDATA + DCD + BIN 构成裸机烧录文件
+IVT + BOOTDATA + DCD有3kByte，加上bootrom的1k数据有4k
+image文件的在sd卡中的绝对地址 使用0X877FF000 
+ （bootrom占1kByte）
+IVT的起始绝对地址 IVT的self的数据 是同一个数据 与bin文件地址相差0xc00（3kByte）使用0X877FF400 
+BOOTDATA绝对地址与IVT的起始绝对地址相差0x20（32Byte，IVT的大小，即IVT紧接着就是BOOTDATA）IVT的bootdata的数据 使用0X877FF420
+DCD 绝对地址与IVT的起始绝对地址相差0x2c（44Byte，即BOOTDATA有12Byte大小）DCD 区域不能超过1768Byte IVT的DCD的数据 使用0X877FF42C
+ （3kByte还剩1260Byte）
+bin文件的在sd卡中的绝对地址 IVT的entry的数据  是同一个数据 我们使用0x87800000
+
+
+加载头部
+使用程序向二进制文件前加入上述头部信息
+
+ 烧录bin到SD卡
+附：imxdownload（linux下加头和烧录小程序）分析
+https://blog.csdn.net/weixin_39869569/article/details/113390184
+https://cxybb.com/article/zouli415/106379159
+
+
+
+
+启动方式
+板子上的拨键
+是个表：
+拨键|引脚名|内部启动 外部启动
+     ------ ---------
+位1  boot1 = 1  =0
+位2  boot0 = 0  =1
+位3  lcddata11
+位4  lcddata3
+位5  lcddata4
+位6  lcddata5
+位7  lcddata6
+位8  lcddata7
+
+启动设备8.5bootdevices(internal boot)
+在BOOT_CFG1,2,4中，其它位接低电平：
+BOOT_CFG2[3]（lcddata11）选择SD卡启动接口
+BOOT_CFG1[34567]（lcddata34567）内部启动的具体配置
+
+启动流程
+eFUSE有无烧写确定启动设备或GPIO的状态确定
+boot ROM 协同DCD数据设置时钟为396mhz，使能一级二级cache和mmu，然后读取image文件
+	内部启动时芯片会执行内部的 boot ROM 代码，这段 boot ROM 代码会进行硬件初始化(一部分外设)，
+	然后从 boot 设备(就是存放代码的设备、比如 SD/EMMC、NAND)中将代码拷贝出来复制到指定的 RAM 中，
+	一般是 DDR。
+image文件就是上述的烧录文件
+
+
+
+
+
+C语言程序
+1.设置访问模式
+CPSR寄存器
+CPSR[bit4-0] = 0x13
+2.设置sp程序指针
+指向DDR，0x8000 0000~0x9fff ffff(512MB)
+栈大小，0x200000(2MB)
+栈增长，对于A7栈增长是向下增长，即从低位到高位
+设置sp指向0x8020 0000
+3.跳转C入口
+
+链接脚本
+arm-linux-gnueabihf-ld -T <链接脚本文件名>
+https://www.bbsmax.com/A/mo5kKkBn5w/
+
+uuu（mfgtools）官方烧录
+
+官方SDK
+SDK_2.2_MCIM6ULL_RFP_Win.exe
+
+
+模块化工程BSP
+工程文件树由来源大分类创建文件夹，再由功能和作用细分小类，最终创建文件
+vscode创建工程
+在工程文件夹创建.VSCODE文件夹
+在命令面板（ctrl+shift+p）搜索C/C++editconfigurationsjosn，添加vscode配置
+为工程添加workspaceFolder路径
+重新编写BSP化的Makefile文件
+使用Makefile的函数
+（$(patsubst 某些, 替换, 文本)函数为替换某些文本）
+（foreach函数for循环函数）
+（wildcard函数展开给变量赋值的通配符）
+（notdir函数剔除文件的路径）
+（将xxx替换后缀 : $(xxx:.c=.o)）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

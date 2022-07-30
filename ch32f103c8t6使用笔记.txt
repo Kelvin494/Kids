@@ -1,0 +1,12 @@
+\烧录程序
+\\串口
+\\\步骤
+usb转ttl串口连接方式：
+Rt=A9
+Tx=A10
+GND=GND
+VCC=3V3
+将BOOT0设为高电平，以进入串口下载
+（复位按键 boot0键，先按住复位，再按住boot松开复位就会进入）
+MounRiver Studio编程
+WCHispTool烧录下载，选择ch32f系列，串口下载方式

@@ -1,3 +1,4 @@
+
 make
 makefile文件
 基本格式
@@ -21,6 +22,35 @@ clean :
 %.o : %.c
 	$(CC) $^ $(CFLAGS) -o $@
 
+#Makefile 变量的使用
+通用赋值符“=”
+引用已定义的变量赋值符“:=”
+单例性赋值符“?=”
+变量追加“+=”
+通配符“%”
+引用变量标志“$()”
+$@ ：表示此公式是通用的
+$< ：表示依赖文件，即%.c ；原文：依赖文件集合中的第一个文件，如果依赖文件是以模式(即“%”)定义的，那么“$<”就是符合模式的一系列的文件集合。
+$^ ：表示依赖文件去重，以空格分开
+
+伪目标声明
+为了只执行命令
+.PHONY:clean
+
+逻辑控制
+
+函数
+
+静态模式
+<targets ...>: <target-pattern>: <prereq-patterns ...> 
+<commands>
+目标文件：目标集模式：目标的依赖模式
+命令
+举例：
+objects = foo.o bar.o 
+all: $(objects) 
+$(objects): %.o: %.c 
+$(CC) -c $(CFLAGS) $< -o $@ 
 
 cmake
 创建CMakeList.txt

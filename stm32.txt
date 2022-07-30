@@ -1,0 +1,56 @@
+# HAL库
+## 时钟树
+
+
+结构体:
+RCC_OscInitTypeDef//初始配置晶振分频
+RCC_ClkInitTypeDef//初始配置AHB、APB总线时钟系统的分频
+函数：
+HAL_RCC_DeInit		//恢复为复位值
+HAL_RCC_OscConfig	//生效RCC_OscInitTypeDef
+HAL_RCC_ClockConfig	//生效RCC_ClkInitTypeDef
+HAL_RCC_McoConfig	
+HAL_RCC_EnableCSS
+HAL_RCC_DisableCSS
+HAL_RCC_GetSysClockFreq	//
+HAL_RCC_GetHCLKFreq		//
+HAL RCC_GetPCLK1Freq	//
+HAL_RCC_GetPCLK2Freq	//
+HAL_RCC_GetskConfig		//
+HAL_RCC_GetclockConfig	//
+HAL_RCC_NMI_IRQHancler
+HAL_RCC_CSSCallback
+
+
+
+## 中断
+CortexM3 有256种异常和中断，其中编号1~15是系统异常，16~255是外部中断
+抢占属性 响应属性（子优先级）
+STM32 的中断向量具有两个属性，一个为抢占属性，另一个为响应属性，其属性编号越小，表明它的优先级别越高。
+抢占，是指打断其他中断的属性，即因为具有这个属性会出现嵌套中断（在执行中断服务函数A 的过程中被中断B 打断，执行完中断服务函数B 再继续执行中断服务函数A），
+抢占属性由NVIC_IRQChannelPreemptionPriority 的参数配置。
+而响应属性则应用在抢占属性相同的情况下，当两个中断向量的抢占优先级相同时，如果两个中断同时到达，则先处理响应优先级高的中断， 
+响应属性由NVIC_IRQChannelSubPriority 参数配置。
+
+这两个优先级各占几个位又要根据 SCB->AIRCR 中的中断分组设置来决定。
+这里简单介绍一下 STM32 的中断分组：STM32 将中断分为 5 个组，组 0~4。该分组的设
+置是由 SCB->AIRCR 寄存器的 bit10~8 来定义的。具体的分配关系如表 4.5.1 所示：
+组 AIRCR[10：8] bit[7：4]分配情况 分配结果
+0 111 0：4 0 位抢占优先级，4 位响应优先级
+1 110 1：3 1 位抢占优先级，3 位响应优先级
+2 101 2：2 2 位抢占优先级，2 位响应优先级
+3 100 3：1 3 位抢占优先级，1 位响应优先级
+4 011 4：0 4 位抢占优先级，0 位响应优先级
+可以记为分配给抢占的有几位，就是第几组
+
+抢占 绝对的高级，响应 只能在排队时插队，和同等抢占级运行起来只能挨个运行，不能强抢其他的同等抢占级的运行时刻
+抢占主要应用于嵌套中断，响应 主要应用于实现多级优先级队列
+
+函数：
+选择中断分组： NVIC_PriorityGroupConfig(uint32_t NVIC_PriorityGroup)
+每个优先级控制：NVIC_Init(NVIC_InitTypeDef* NVIC_InitStruct)//设置使能
+
+
+
+
+## SystemInit函数

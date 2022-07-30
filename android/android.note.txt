@@ -1,3 +1,15 @@
+无限调试命令
+adb pair ip:port//同一局域网下配对设备命令，再次输入配对码
+adb connect ip:port//连接
+adb disconnect ip:port//连接
+
+
+anddroid总述
+在Android系统中，每个进程都在自己的Dalivik中运行，进程之间不会干扰。但是有时进程之前需要通信，比如App要查询下当前系统的后台进程，就需要去调用AMS提供的可查询后台进程的方法。
+跨进程通信有很很多种技术手段，比如我们常用的通过Intent去调起另外一个进程、发广播（发送者和接受者不在同一个进程中）。
+AIDL的实现步骤：
+既然是跨进程，那就必须有两个进程：一个作为Server，一个作为Client。
+
 Android中的布局
 Android中有六大布局，分别是: 
 LinearLayout(线性布局)，
@@ -17,5 +29,208 @@ layout_height 高度
 id 资源id，可用findViewById(id)找出
 background 设置背景图或色
 weight 权重 (线性布局重要属性)
+
+Context上下文语境
+
+Binder
+进程间通信IPC
+
+Bundle
+putXX/getXX
+用于封装数据
+以 主键 和 键值 的形式
+
+Handle
+主要用于线程与主UI线程间通信
+用法举例：
+主活动内
+    public Handler myhandler;
+myhandler = new Handler() {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                //super.handleMessage(msg);
+                if (msg.what == 0x1111) {
+                    mainTv.setText(buuu);
+                }
+                if (msg.what == 0x2222) {
+                    Bundle s=msg.getData();
+                    String ss=s.getString("msg");
+                    mainTv.setText(ss);
+                }
+                if (msg.what == 0x3333) {
+                    mainTv.setText(buuu);
+                }
+            }
+        };
+Message ms=new Message();
+ms.what=0x2222;
+Bundle msBund=new Bundle();
+msBund.putString("msg",buffx);
+ms.setData(msBund);
+myhandler.sendMessage(ms);
+
+///网络test
+    private Socket serviceSock;
+    private String IP = "10.129.82.153";
+    private int PORT = 12345;
+
+    String buffx;
+    BufferedReader in;
+    PrintWriter pw;
+
+    private void netup() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    serviceSock = new Socket(IP, PORT);
+                    buuu = "socket";
+                    myhandler.sendEmptyMessage(0x1111);
+                    in = new BufferedReader(new InputStreamReader(
+                            serviceSock.getInputStream(), "UTF-8"));
+                    pw = new PrintWriter(new BufferedWriter(
+                            new OutputStreamWriter(serviceSock.getOutputStream())), true);
+                    pw.println("ffffffffffff");
+                    Thread.sleep(2000);
+                    buuu = "in pw";
+                    myhandler.sendEmptyMessage(0x3333);
+
+                    //pw.close();
+                    //serviceSock.close();
+                } catch (IOException | InterruptedException e) {
+                }
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(2000);
+
+                    while (true) {
+                        buffx = in.readLine();
+                        if (buffx != null) {
+                            //发出显示
+                            buuu = "msin";
+                            myhandler.sendEmptyMessage(0x3333);
+                            Message ms=new Message();
+                            ms.what=0x2222;
+                            Bundle msBund=new Bundle();
+                            msBund.putString("msg",buffx);
+                            ms.setData(msBund);
+                            myhandler.sendMessage(ms);
+
+                        }
+                    }
+                } catch (Exception e) {
+                }
+            }
+        }).start();
+    }
+
+
+Activity间数据传递
+https://cloud.tencent.com/developer/article/1440654
+1.通过Intent传递（主要）
+基础数据类型传输
+传入：在第一个Activity启动第二个Activity的Intent后使用intent.putExtar(String name, String value);
+接收：第二个Activity内使用getIntent().getStringExtra(String name);
+注意，参数name为键值必须为字符串，内容可自定义，通过此检索出数据，value参数为基础数据，可自定义类型，对应的接收时函数为get类型Extra()；
+基础类型有boolean、byte、char、short、int、float、long、double。常用复杂类型用法与此相似，有String、int[]、Parcelable、Serializable、CharSequence、ArrayList<String>等。
+自定义数据类型传输
+实现 Serializable 接口（java的）
+intent.putExtra(String name, Serializable value);
+intent.getSerializableExtra(String name);
+实现 Parcelable 接口（android封装的 推荐，但Parcelable 不能使用在要将数据存储在磁盘上的情况）
+intent.putExtra(String name, Parcelable value);
+intent.getParcelableExtra(String name);
+
+提示，intent.putExtra 的内部也是维护的一个 Bundle，通过 putExtra 放入的数据，取出时也可以通过 Bundle 去取。
+
+2.通过全局变量传递
+用法举例：
+创建一个工具类
+public class Transmitter {
+ public static Student student;
+}
+//传递
+Student stu = new Student();
+Transmitter.student = stu;
+Intent intent = new Intent(this, Activity2);
+startActivity(intent);
+//接收
+onCreate(...){
+ Student stu = Transmitter.student;
+}
+但是，全局变量在 APP 运行期间一直存在，如果通过全局变量存放的数据量比较大，变量个数多；并且在不需要使用后，没有及时的将全局变量置为 null，好让 GC 去回收，那么是有可能会引发 OOM 问题的。
+因此，如果要使用全局变量来作为数据传递方法，那么就一定要注意维护好这些全局变量的状态
+
+3.通过 SharedPreferences 传递
+Android 提供的一种实现数据存储的方式
+将数据以xml 格式存储在机器中，通常用来存储 APP 的设置信息，我们也可以用它来实现 Activity 间的数据传递。
+但是，SharedPreferences 因其特殊的工作方式，只提供了对部分基本类型和 String 的操作，对其它既有复杂类型和自定义类型是不支持的。它所支持的类型只有：
+boolean、float、int、long、String、Set<String>
+
+4.通过 SystemProperties 传递
+5.通过 SettingsProvider 传递
+6.通过数据库传递
+7.通过文件传递
+等
+
+
+Service
+Android提供的允许长期驻留后台的用于轮询操作的组件，是与activity同一线程的
+两种启动方式
+StartService()与创建程序相互独立，周期独立，无交互
+BindService()与创建程序相关联，一同被销毁，与活动有交互
+还可以先start后再和其他的程序bind使用，Service生命周期还是start启动的，
+前台service安卓系统要求的，必须有通知
+IntentService新线程，线程完毕自动退出服务
+
+SharedPreferences设置偏好的保存
+实际存在于文件系统/data/data/com.example.test<应用包名>/shared_prefs下
+用法举例：
+private SharedPreferences sp;
+private SharedPreferences.Editor editor;
+public void saveinit(){
+        sp=getSharedPreferences("game",MODE_PRIVATE);
+        editor=sp.edit();
+
+    }
+
+    public void readsetting(View view){
+        //默认值
+        String username=sp.getString("username","brad");
+        boolean isSound=sp.getBoolean("sound",true);
+        int stage=sp.getInt("stage",4);
+        Log.i("save","get "+username+":"+isSound+":"+stage);
+    }
+    public void writesetting(View view) {
+        //自定义输入值
+        editor.putString("username","ry_user");
+        editor.putBoolean("sound",false);
+        editor.putInt("stage",7);
+        editor.commit();
+/*
+apply() 会立即更改内存中的 SharedPreferences 对象，
+但会将更新异步写入磁盘。或者，您也可以使用 commit() 将数据同步写入磁盘。
+但是，由于 commit() 是同步的，您应避免从主线程调用它，因为它可能会暂停您的界面呈现
+*/
+        Toast.makeText(this,"saved",Toast.LENGTH_SHORT).show();
+    }
+保存文件到/data/data/<应用包名>/file
+public void saveFile(){//实际加上try,catch捕获异常
+FileOutputStream fout=openFileOutput("data.txt",MODE_PRIVATE);//新建，MODE_APPEND，追加
+fout.write("hello".getBytes());//read()
+fout.flush();
+fout.close();
+Toast.makeText(this,"saved",Toast.LENGTH_SHORT).show();
+}
+//以上数据保存法的数据为跟随应用的存在而存在的
+
+//存取应用外文件
+运行中请求权限：https://developer.android.google.cn/training/permissions/requesting
+
+
 
 
